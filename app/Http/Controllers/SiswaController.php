@@ -77,6 +77,17 @@ class SiswaController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $validator = Validator::make($request->all(), [
+            'nama' => ['sometimes', 'required', 'string', 'max:255', 'regex:/^[a-zA-Z\s]+$/'],
+            'kelas' => ['sometimes', 'required', 'string', 'max:10', 'regex:/^(X|XI|XII)\s(IPA|IPS)\s[1-9]$/'],
+            'umur' => 'sometimes|required|integer|min:6|max:18'
+        ], [
+            'nama.regex' => 'Nama hanya boleh mengandung huruf dan spasi',
+            'kelas.regex' => 'Format kelas harus seperti "XII IPA 1"',
+            'umur.min' => 'Umur minimal adalah 6 tahun',
+            'umur.max' => 'Umur maksimal adalah 18 tahun'
+        ]);
+
         try {
             $siswa = Siswa::findOrFail($id);
             $validatedData = $request->validate([
@@ -84,6 +95,7 @@ class SiswaController extends Controller
                 'kelas' => 'sometimes|required|string|max:10',
                 'umur' => 'sometimes|required|integer',
             ]);
+            $siswa->update($validatedData);
 
             return response()->json($siswa);
         } catch (\Exception $e) {
